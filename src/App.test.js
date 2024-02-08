@@ -1,68 +1,35 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import App from "./App";
-import Login from "./Login";
+import Login, { doLogin } from "./Login";
+import userEvent from "@testing-library/user-event";
 
-const unmockedFetch = global.fetch;
-
-beforeEach(() => {
-  global.fetch = jest.fn();
-});
-
-afterAll(() => {
-  global.fetch = unmockedFetch;
-});
-
-// This is actual testing suite
 describe("login", () => {
-  /*test("works", async () => {
-    const json = await doLogin();
-    expect(Array.isArray(json)).toEqual(true);
-    expect(json.length).toEqual(0);
-  });*/
-  test("works", async () => {
-    const mockFetch = jest.spyOn(global, "fetch").mockImplementationOnce(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ token: "" }),
-      })
-    );
-    //render(<App />);
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+  it("login is valid ", async () => {
+    render(<Login />);
+    const loginBtn = screen.getByTestId("btnLogin");
+    const emailInputNode = screen.getByPlaceholderText("Enter email");
+    const passwordInputNode = screen.getByPlaceholderText("Enter password");
+
+    userEvent.type(emailInputNode, "eve.holt@reqres.in");
+    userEvent.type(passwordInputNode, "c");
+
+    fireEvent.click(loginBtn);
+    const info = screen.getByTestId("alertSuccess");
+    console.log(info);
+    expect(info).toBeInTheDocument();
   });
 
-  it("Should call onSubmit when Login button is pressed", () => {
-    const onSubmit = jest.fn();
-    render(<App />);
-    /*const emailInput = screen.getByTestId("emailInput");
-    const passwordInput = screen.getByTestId("inputPassword");
-    fireEvent.change(emailInput, {
-      target: { value: "eve.holt@reqres.in" },
-    });
-    fireEvent.change(emailInput, {
-      target: { value: "c" },
-    });*/
-    const logInButton = screen.getByTestId("btnLogin");
+  it("login is invalid ", async () => {
+    render(<Login />);
+    const loginBtn = screen.getByTestId("btnLogin");
+    const emailInputNode = screen.getByPlaceholderText("Enter email");
+    const passwordInputNode = screen.getByPlaceholderText("Enter password");
 
-    fireEvent.click(logInButton);
-    expect(onSubmit).toHaveBeenCalledWith("a@email.com", "password");
+    userEvent.type(emailInputNode, "abc@reqres.in");
+    userEvent.type(passwordInputNode, "c");
+
+    fireEvent.click(loginBtn);
+    const info = screen.getByTestId("alertError");
+    expect(info).toBeInTheDocument();
   });
 });
-
-/*describe("login", () => {
-  const mockData = { token: "" };
-  const fetchMock = jest
-    .spyOn(global, "fetch")
-    .mockImplementation(() =>
-      Promise.resolve({ json: () => Promise.resolve(mockData) })
-    );
-
-  test("works", async () => {
-    //const json = await doLogin();
-    //expect(fetchMock).toHaveBeenCalledWith("https://reqres.in/api/login");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    expect(Array.isArray(json)).toEqual(true);
-    expect(json.length).toEqual(0);
-    global.fetch.mockRestore();
-  });
-});*/
